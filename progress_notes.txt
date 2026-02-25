@@ -1,0 +1,97 @@
+Step-by-Step notes (on EndeavourOS)
+
+update system:
+sudo pacman -Syu
+(or) sudo pacman -Syyu
+
+install php (if not found):
+sudo pacman -S php
+
+verification:
+php --version
+
+install composer:
+sudo pacman -S composer
+
+create a Laravel application:
+composer create-project laravel/laravel mini-inventory
+
+configure .env file:
+DB_CONNECTION=sqlite
+
+create database file (in database directory):
+touch database/database.sqlite
+
+install sanctum:
+php artisan install:api
+
+install sqlite extension for php:
+sudo pacman -S php-sqlite
+
+enable sqlite extension in php.ini :
+1.
+php --ini | grep "Loaded Configuration File"
+2.
+sudo vim /etc/php/php.ini
+3. remove semicolon to uncomment -> ;extension=sqlite3  ;extension=pdo_sqlite
+
+verification:
+php -m | grep sqlite
+
+run migration:
+php artisan migrate
+
+scaffold vue3 frontend:
+npm create vite@latest frontend -- --template vue
+cd frontend
+npm install
+npm install vue-router pinia axios
+
+include cors in bootstrap/app.php :
+...
+->withMiddleware(function (Middleware $middleware): {
+	$middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+    })
+...
+
+update config/cors.php :
+'allowed_origins' => ['http://localhost:5173'],
+'supports_credentials' => true,
+
+cache config:
+php artisan config:cache
+
+clear config:
+php artisan config:clear
+
+create test endpoint:
+// Test endpoint (no authentication required)
+Route::get('/ping', function () {
+	return response()->json(['message' => 'pong']);
+});
+
+
+--------------------------------------------------------------------
+VERIFY CONNECTION:
+Terminal1 /mini_project:
+php artisan serve
+Terminal2 /frontend:
+cd frontend
+npm run dev
+Terminal3:
+curl http://localhost:8000/api/ping
+--------------------------------------------------------------------
+
+
+setup axios base config in vue:
+create frontend/src/axios.js and add in .js file:
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: 'http://localhost:8000/api',
+  headers: {
+    'Accept': 'application/json',
+  },
+})
+
+export default api
