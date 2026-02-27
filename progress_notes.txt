@@ -1,4 +1,6 @@
-Step-by-Step notes (on EndeavourOS)
+Step-by-Step notes (on Endeavour)
+______________________________________________________________________________
+Initial Project Scaffolding
 
 update system:
 sudo pacman -Syu
@@ -51,7 +53,7 @@ include cors in bootstrap/app.php :
 ...
 ->withMiddleware(function (Middleware $middleware): {
 	$middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
-    })
+		})
 ...
 
 update config/cors.php :
@@ -89,16 +91,19 @@ create frontend/src/axios.js and add in .js file:
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
-  headers: {
-    'Accept': 'application/json',
-  },
+	baseURL: 'http://localhost:8000/api',
+	headers: {
+		'Accept': 'application/json',
+	},
 })
 
 export default api
 
 
 create git repo: git init etc...
+
+______________________________________________________________________________
+Feature: Authentication (End-to-End)
 
 create authcontroller:
 php artisan make:controller Api/authcontroller
@@ -114,21 +119,95 @@ php artisan serve
 
 # Register
 curl -X POST http://localhost:8000/api/register \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{"name":"Test User","email":"test@test.com","password":"password","password_confirmation":"password"}'
+	-H "Content-Type: application/json" \
+	-H "Accept: application/json" \
+	-d '{"name":"Test User","email":"test@test.com","password":"password","password_confirmation":"password"}'
 
 # Login
 curl -X POST http://localhost:8000/api/login \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{"email":"test@test.com","password":"password"}'
+	-H "Content-Type: application/json" \
+	-H "Accept: application/json" \
+	-d '{"email":"test@test.com","password":"password"}'
 
 # Copy the token from login response, then:
 curl http://localhost:8000/api/user \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+	-H "Authorization: Bearer YOUR_TOKEN_HERE"
 
 create frontend/src/stores/auth.js (Pinia auth store - managing authentication)
-update frontend/sec/axios.js (attach token automatically)
+update frontend/src/axios.js (attach token automatically)
 update frontend/src/main.js (entry point to boot vue app)
-create frontend/sec/router/index.js (controls which page shows based on URL)
+create frontend/src/router/index.js (controls which page shows based on URL)
+create frontend/src/view/Login.vue (placeholder)
+create frontend/src/view/Products.vue (placeholder)
+update frontend/src/App.vue (pages get rendered inside <router-view />)
+
+----------------------------------------------------------------------------
+test full flow:
+start laravel:
+php artisan serve
+start vue:
+cd frontend && npm run dev
+open: http://localhost:5173 (login with: test@test.com | password -> "Welcome, Test USer!")
+----------------------------------------------------------------------------
+______________________________________________________________________________
+Feature: Products CRUD (End-to-End)
+
+create product table:
+php artisan make:model Product -m
+
+update database/migrations/....._create_products_table.php
+update app/Models/Product.php
+
+migrate:
+php artisan migrate
+
+----------------------------------------------------------------------------
+SQLite terminal command
+sqlite3 database/database.sqlite
+
+some useful commands:
+.tables → list all tables
+.schema products → show table structure
+SELECT * FROM products; → see all rows
+SELECT * FROM users; → see all users
+.quit → exit
+----------------------------------------------------------------------------
+
+seed demo data:
+php artisan make:seeder ProductSeeder
+
+update database/seeders/ProductSeeder.php (15 products)
+update database/seeders/DatabaseSeeder.php (1 demo user)
+
+remigrate:
+php artisan migrate:fresh --seed
+
+create product controller:
+php artisan make:controller Api/ProductController
+
+update /app/Http/Controllers/Api/ProductController.php
+
+update routes/api.php
+
+----------------------------------------------------------------------------
+test with curl:
+# Login first to get token
+curl -X POST http://localhost:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@demo.com","password":"password"}'
+
+# List products (paginated, use your token)
+curl "http://localhost:8000/api/products?page=1&per_page=5" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Search
+curl "http://localhost:8000/api/products?search=mouse" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Sort by price descending
+curl "http://localhost:8000/api/products?sort=price&direction=desc" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+----------------------------------------------------------------------------
+
+create pinia product store -> frontend/src/stores/products.js
+update products view -> frontend/src/view/Products.vue
