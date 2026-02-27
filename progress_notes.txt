@@ -73,7 +73,7 @@ Route::get('/ping', function () {
 
 --------------------------------------------------------------------
 VERIFY CONNECTION:
-Terminal1 /mini_project:
+Terminal1 /mini-inventory:
 php artisan serve
 Terminal2 /frontend:
 cd frontend
@@ -85,6 +85,7 @@ curl http://localhost:8000/api/ping
 
 setup axios base config in vue:
 create frontend/src/axios.js and add in .js file:
+
 import axios from 'axios'
 
 const api = axios.create({
@@ -96,4 +97,38 @@ const api = axios.create({
 
 export default api
 
-creat git repo:
+
+create git repo: git init etc...
+
+create authcontroller:
+php artisan make:controller Api/authcontroller
+
+create json responses with proper status in: app/Http/Controllers/Api/AuthController.php
+(update in app/Models/User.php :
+(l9) use Laravel\Sanctum\HasApiTokens
+(l14) use HasApiTokens, HasFactory, Notifiable;
+)
+
+test with curl:
+php artisan serve
+
+# Register
+curl -X POST http://localhost:8000/api/register \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"name":"Test User","email":"test@test.com","password":"password","password_confirmation":"password"}'
+
+# Login
+curl -X POST http://localhost:8000/api/login \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"email":"test@test.com","password":"password"}'
+
+# Copy the token from login response, then:
+curl http://localhost:8000/api/user \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+create frontend/src/stores/auth.js (Pinia auth store - managing authentication)
+update frontend/sec/axios.js (attach token automatically)
+update frontend/src/main.js (entry point to boot vue app)
+create frontend/sec/router/index.js (controls which page shows based on URL)

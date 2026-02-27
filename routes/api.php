@@ -1,14 +1,14 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
 
-// Test endpoint (no authentication required)
-Route::get('/ping', function () {
-	return response()->json(['message' => 'pong']);
-});
+// Public
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-// Protected user endpoint
-Route::get('/user', function (Request $request) {
-	return $request->user();
-})->middleware('auth:sanctum');
+// Protected
+Route::middleware('auth:sanctum')->group(function () {
+	Route::post('/logout', [AuthController::class, 'logout']);
+	Route::get('/user', [AuthController::class, 'user']);
+});
