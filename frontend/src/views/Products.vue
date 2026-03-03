@@ -3,24 +3,27 @@
 		<header class="topbar">
 			<h1>Mini Inventory</h1>
 			<div class="topbar-right">
+				<router-link to="/cart" class="cart-link">
+					🛒 Cart ({{ cart.itemCount }})
+				</router-link>
 				<span>{{ auth.user?.name }}</span>
 				<button class="btn-secondary" @click="handleLogout">Logout</button>
 			</div>
 		</header>
-
+		
 		<main class="container">
 			<!-- Search -->
 			<div class="toolbar">
 				<input type="text" placeholder="Search by name or SKU..." :value="productStore.search"
-					@input="onSearch($event.target.value)" />
+				@input="onSearch($event.target.value)" />
 			</div>
-
+			
 			<!-- Error -->
 			<div v-if="productStore.error" class="error-msg">{{ productStore.error }}</div>
-
+			
 			<!-- Loading -->
 			<div v-if="productStore.loading" class="loading">Loading products...</div>
-
+			
 			<!-- Table -->
 			<table v-else-if="productStore.products.length">
 				<thead>
@@ -56,27 +59,27 @@
 					</tr>
 				</tbody>
 			</table>
-
+			
 			<!-- Empty -->
 			<div v-else class="empty">No products found.</div>
-
+			
 			<!-- Pagination -->
 			<div v-if="productStore.pagination.lastPage > 1" class="pagination">
 				<button :disabled="productStore.pagination.currentPage <= 1"
-					@click="productStore.fetchProducts(productStore.pagination.currentPage - 1)">
-					Previous
-				</button>
-				<span>
-					Page {{ productStore.pagination.currentPage }} of {{ productStore.pagination.lastPage }}
-					({{ productStore.pagination.total }} items)
-				</span>
-				<button :disabled="productStore.pagination.currentPage >= productStore.pagination.lastPage"
-					@click="productStore.fetchProducts(productStore.pagination.currentPage + 1)">
-					Next
-				</button>
-			</div>
-		</main>
-	</div>
+				@click="productStore.fetchProducts(productStore.pagination.currentPage - 1)">
+				Previous
+			</button>
+			<span>
+				Page {{ productStore.pagination.currentPage }} of {{ productStore.pagination.lastPage }}
+				({{ productStore.pagination.total }} items)
+			</span>
+			<button :disabled="productStore.pagination.currentPage >= productStore.pagination.lastPage"
+				@click="productStore.fetchProducts(productStore.pagination.currentPage + 1)">
+				Next
+			</button>
+		</div>
+	</main>
+</div>
 </template>
 
 <script setup>
@@ -84,9 +87,11 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useProductStore } from '../stores/products'
+import { useCartStore } from '../stores/cart'
 
 const auth = useAuthStore()
 const productStore = useProductStore()
+const cart = useCartStore()
 const router = useRouter()
 
 let searchTimeout = null
@@ -109,8 +114,7 @@ function sortIcon(field) {
 }
 
 function addToCart(product) {
-	// placeholder — will wire up in Feature 3
-	alert(`Added "${product.name}" to cart`)
+	cart.addItem(product)
 }
 
 async function handleLogout() {
@@ -152,6 +156,14 @@ async function handleLogout() {
 	margin: 1.5rem auto;
 	padding: 0 1rem;
 }
+
+.cart-link {
+	color: #4f46e5;
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+.cart-link:hover { text-decoration: underline; }
 
 .toolbar {
 	margin-bottom: 1rem;

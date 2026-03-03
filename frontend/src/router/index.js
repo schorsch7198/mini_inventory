@@ -3,10 +3,12 @@ import { useAuthStore } from '../stores/auth'
 
 import Login from '../views/Login.vue'
 import Products from '../views/Products.vue'
+import Cart from '../views/Cart.vue'
 
 const routes = [
 	{ path: '/login', name: 'Login', component: Login },
 	{ path: '/', name: 'Products', component: Products, meta: { requiresAuth: true } },
+	{ path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({
@@ -14,7 +16,6 @@ const router = createRouter({
 	routes,
 })
 
-// Navigation guard -> kind of security check
 router.beforeEach((to) => {
 	const auth = useAuthStore()
 	if (to.meta.requiresAuth && !auth.isAuthenticated) {
