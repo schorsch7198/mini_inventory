@@ -103,7 +103,7 @@ export default api
 create git repo: git init etc...
 
 ______________________________________________________________________________
-Feature: Authentication (End-to-End)
+Feature 1: Authentication (End-to-End)
 
 create authcontroller:
 php artisan make:controller Api/authcontroller
@@ -150,7 +150,7 @@ cd frontend && npm run dev
 open: http://localhost:5173 (login with: test@test.com | password -> "Welcome, Test USer!")
 ----------------------------------------------------------------------------
 ______________________________________________________________________________
-Feature: Products CRUD (End-to-End)
+Feature 2: Products CRUD (End-to-End)
 
 create product table:
 php artisan make:model Product -m
@@ -211,3 +211,55 @@ curl "http://localhost:8000/api/products?sort=price&direction=desc" \
 
 create pinia product store -> frontend/src/stores/products.js
 update products view -> frontend/src/view/Products.vue
+______________________________________________________________________________
+Feature 3: shopping cart & order process
+
+order model and migration:
+php artisan make:model Order -m
+php artisan make:model OrderItem -m
+
+update database/migration/xxxx_create_orders_table.php
+update database/migration/xxxx_create_order_items_table.php
+update app/Models/Order.php
+update app/Models/OrderItem.php
+
+run migration:
+php artisan migrate
+
+order controller:
+php artisan make:controller Api/OrderController
+
+update app/Http/Controllers/Api/OrderController.php
+add orders function in app/Models/User.php
+update auth:sanctum group in routes/api.php (add import at the top)
+
+----------------------------------------------------------------------------
+test with curl:
+# Login, grab token
+curl -X POST http://localhost:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@demo.com","password":"password"}'
+
+# Place order (product IDs 1 and 2)
+curl -X POST http://localhost:8000/api/orders \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"items":[{"product_id":1,"quantity":2},{"product_id":2,"quantity":1}]}'
+
+# Verify stock decreased
+curl "http://localhost:8000/api/products/1" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Test out-of-stock (request more than available)
+curl -X POST http://localhost:8000/api/orders \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"items":[{"product_id":9,"quantity":999}]}'
+----------------------------------------------------------------------------
+
+create Pinia Cart Store at frontend/src/stores/cart.js
+create cart view at frontend/src/views/Cart.vue
+add cart route and wire up the "+Cart"- button at frontend/src/route/index.js
+update and replace placeholder addToCart function at Products.vue (and add cart link at topbar)
+
+update submitOrder action and add product store refresh after claring the cart at frontend/src/stores/cart.js
